@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mar.Search">
+
+ <select id="searchboard" resultType="com.mar.Search.SearchVO" parameterType="String">
+<![CDATA[
+select * from board b join  users u on b.user_id = u.user_id
+           where b.board_content like '%'|| #{search ,jdbcType=VARCHAR} ||'%' or
+                   b.user_id like '%'|| #{search,jdbcType=VARCHAR} ||'%' 
+                 ]]>      
+ </select>
+ <select id="searchuser" resultType="com.mar.Search.SearchVO" parameterType="String">
+  <![CDATA[
+  select * from users where user_id = #{search,jdbcType=VARCHAR}
+                   ]]>
+ </select>
+</mapper>

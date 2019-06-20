@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mar.Follow">
+ <insert id="dofollow" parameterType="com.mar.myBVO.FollowVO">
+  insert into follow values(#{send_id},#{get_id})
+ </insert>
+  <select id="getfollow" resultType="com.mar.myBVO.FollowVO"  parameterType="com.mar.myBVO.FollowVO" >
+  select get_id from follow where send_id = (select user_id from users where user_id = #{id ,jdbcType=VARCHAR})
+ </select>
+ 
+  <select id="getfollower" resultType="com.mar.myBVO.FollowVO"  parameterType="com.mar.myBVO.FollowVO" >
+  select send_id from follow where get_id = (select user_id from users where user_id = #{id, jdbcType=VARCHAR})
+ </select> 
+ <select id="checkfollow"  resultType="string"  parameterType="com.mar.myBVO.FollowVO" >
+ select send_id from follow where get_id = #{get_id} and send_id = #{send_id}
+ </select>
+ <delete id="doDelete" parameterType="com.mar.myBVO.FollowVO">
+  delete from follow where get_id = #{get_id} and send_id = #{send_id}
+ </delete>
+ <select id="getfollowdata" resultType="com.mar.UVO.UserVO" parameterType="String">
+select * from users where user_id in (select get_id from follow where send_id in #{id})
+ </select>
+ <select id="getfollowerdata" resultType="com.mar.UVO.UserVO" parameterType="String">
+select * from users where user_id in (select send_id from follow where get_id in #{id})
+ </select>
+</mapper>

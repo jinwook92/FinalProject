@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mar.ActDAO.ActDAO">
+	<insert id="likeact" parameterType="hashmap">
+		insert into actlog (act_id, react_id, board_num, actlog_content, actlog_date)
+		values(#{id}, (select user_id from board where board_num=#{num}), #{num}, '의 게시물을 좋아합니다.', sysdate)
+	</insert>
+	
+	<insert id="followact" parameterType="hashmap">
+		insert into actlog (act_id, react_id, actlog_content, actlog_date) 
+		values(#{sendid}, #{getid}, '을 팔로우 합니다.', sysdate) 
+	</insert>
+	
+	<insert id="replyact" parameterType="hashmap">
+		insert into actlog (act_id, react_id, reply_num, actlog_content, actlog_date)
+		values(#{repid}, (select user_id from board where board_num=#{num}), #{replynum},'의 게시물에 댓글을 남겼습니다.', sysdate)	
+	</insert>
+	
+	<select id="actlist" parameterType="String" resultType="com.mar.ActVO.ActVO">
+		<![CDATA[
+		select act_id, (select user_image from users where user_id=act_id) as act_image, react_id, (select user_image from users where user_id=react_id) as react_image,
+		actlog_content, trunc((sysdate-(actlog_date-1/24/60))*24*60) as actlog_minute
+		from actlog
+		where  react_id=#{id} and act_id <> #{id} and rownum<=10
+		order by actlog_date desc
+		]]>
+	</select>	
+	
+	<delete id="replogdelete" parameterType="int">
+		delete from actlog 
+		where reply_num=#{num}
+	</delete>
+	
+	<delete id="followlogdelete" parameterType="hashmap">
+		delete from actlog 
+		where act_id=#{sendid} and react_id=#{getid}
+	</delete>
+ 
+	<delete id="likelogdelete">
+		delete from actlog where act_id=#{id} and board_num=#{boardnum} 
+	</delete> 
+</mapper>

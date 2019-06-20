@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mar.BDAO.BoardDAO">
+	<!--  board부분 쿼리 -->
+	<insert id="insert" parameterType="com.mar.BVO.BoardVO">
+	<choose>
+         <when test="board_image != null">
+            insert into board(board_num, user_id, board_image, board_content, loc , 
+            board_date,board_content_tag)
+            values(board_seq.nextval, #{user_id}, #{board_image}, #{board_content}, #{loc}, sysdate, #{board_content_tag})
+         </when>
+         <otherwise>
+            insert into board(board_num, user_id, movielink, board_content,
+            board_date,board_content_tag)
+            values(board_seq.nextval, #{user_id}, SUBSTR(#{movielink}, -11,11), #{board_content},
+            sysdate,#{board_content_tag})
+         </otherwise>
+      </choose>
+	</insert>
+	<select id="boardlist" resultType="com.mar.BVO.BoardVO" parameterType="String">
+		<![CDATA[
+		select b.board_num, b.board_content, b.board_content_tag,b.board_image,b.movielink, b.board_date, b.user_id, b.loc
+		, (select user_image from users where user_id=b.user_id) as user_image
+		, (select count(*) from reply where board_num=b.board_num) as board_repcount 
+		, (select count(*) from likes where board_num=b.board_num) as like_count
+		, (select count(*) from likes where board_num=b.board_num and user_id=#{id}) as like_on 
+		from board b  
+		where b.user_id=#{id} or b.user_id in (select get_id from follow where send_id=#{id}) and rownum<=20
+		order by b.board_num desc
+		]]>
+	</select>
+	<select id="imgdata" resultType="com.mar.BVO.BoardVO" parameterType="int">
+		select board_img, img_name, img_type from board where board_num=#{num}
+	</select>
+	<delete id="delete" parameterType="int">
+		delete from board where board_num=#{num}
+	</delete>
+	<select id="detail" parameterType="int" resultType="com.mar.BVO.BoardVO">
+		select b.board_num, b.user_id, u.user_image, b.board_content,b.board_content_tag ,b.board_image, (select count(*) from likes where board_num=b.board_num) as like_count, b.movielink
+		, (select count(*) from likes where board_num=b.board_num and user_id=#{id}) as like_on, b.loc
+		from board b, users u 
+		where b.user_id=u.user_id and board_num=#{num}
+	</select>
+	<insert id="repwrite" parameterType="hashmap">
+		insert into reply(reply_num, reply_content, user_id, board_num)
+		values(reply_seq.nextval, #{content}, #{repid}, #{num})		
+	</insert>
+	<insert id="chatinsertDB" parameterType="hashmap">
+	
+	insert into chat(CHAT_SENDER,CHAT_RECEIVER, CHAT_CONTENT,CHAT_DATE)
+	values(#{user_id}, #{with_id} , #{content}, sysdate)
+	</insert>
+	
+	
+	<select id="replist" parameterType="int" resultType="com.mar.BVO.ReplyBoardVO">
+		select	r.reply_num, r.reply_content, r.user_id, r.board_num, u.user_image
+		from reply r, users u
+		where board_num=#{num} and r.user_id = u.user_id
+		order by reply_num		
+	</select>
+	<delete id="subdelete" parameterType="int">
+		delete from reply where reply_num=#{num}
+
+	</delete>
+	<update id="modify" parameterType="com.mar.BVO.BoardVO">
+		update board set board_content=#{board_content},board_content_tag=#{board_content_tag}
+		where board_num=#{board_num}
+	</update>
+	<select id="checkLike" parameterType="hashmap" resultType="int">
+		select count(*) from likes where user_id=#{id} and board_num=#{num}	
+	</select>   
+	<select id="alllike" parameterType="hashmap" resultType="int">
+		select count(*) from likes where board_num=#{num}
+	</select>
+	<insert id="like" parameterType="hashmap">
+		insert into likes(user_id, board_num) 
+		values(#{id}, #{num})
+	</insert>
+	
+	<select id="selectreplynum" parameterType="hashmap" resultType="int">
+		select reply_num from reply where board_num=#{num} and reply_content=#{content} and user_id=#{repid}
+	</select>
+
+	<delete id="dellike" parameterType="hashmap">
+		delete from likes where user_id=#{id} and board_num=#{num}
+	</delete>
+
+</mapper>

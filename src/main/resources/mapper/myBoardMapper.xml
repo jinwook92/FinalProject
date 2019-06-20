@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.mar.myBoardDAO.myBoardDAO">
+  
+<!--   <resultMap id="UsersVO" type="com.mar.myBoardVO.UsersVO">
+		<result property="user_id" column="user_id"/>
+		<result property="user_pwd" column="user_pwd"/>
+		<result property="user_salt" column="user_salt"/>
+		<result property="user_name" column="user_name" />
+		<result property="user_img" column="user_img" jdbcType="Blob" javaType="[B"/>
+		<result property="user_gen" column="user_gen"/>
+		<result property="user_intro" column="user_intro"/>
+	</resultMap> -->
+
+  <select id="mylist" resultType="com.mar.UVO.UserVO" parameterType="string">
+  	select user_id, user_name, user_image, user_intro ,user_gen
+  	from users
+  	where user_id=#{id}
+  </select>
+  
+  <update id="mymodi" parameterType="com.mar.UVO.UserVO">
+  	update users
+  	set user_name=#{user_name}
+  		, user_pwd=#{user_pwd}
+  		, user_image=#{user_image}
+  		, user_gen=#{user_gen}
+  		, user_intro=#{user_intro}
+  	where user_id=#{user_id}
+  </update>
+  
+  <select id="follow" resultType="int"  parameterType="string" >
+  	select count(*)
+  	from follow
+  	where send_id = (select user_id from users where user_id= #{id})
+  </select>
+  
+  <select id="follower" resultType="int"  parameterType="string" >
+  	select count(*)
+  	from follow
+  	where get_id = (select user_id from users where user_id= #{id})
+  </select>
+  
+  <select id="myboardlist" resultType="com.mar.BVO.BoardVO" parameterType="String">
+   select board_num,user_id,board_content,board_date,like_count,board_image ,movielink
+   from board
+   where user_id=#{id}
+   order by board_num desc
+  </select>
+  
+
+  <select id="dualfollower" resultType="com.mar.UVO.UserVO" parameterType="string">
+  select * from users where user_id in (select send_id from follow where send_id in(select get_id from follow where send_id=#{id}) and get_id=#{id})
+  
+  </select>
+  <select id="getChatList" resultType="com.mar.chatVO.ChatVO" parameterType="hashmap">
+  	select chat_sender, chat_receiver,chat_content,chat_date from chat where (chat_sender=#{id} and chat_receiver = #{withId}) or (chat_sender=#{withId} and chat_receiver =#{id}) 
+  	order by chat_date
+    </select>
+
+  <select id="DelOk" resultType="string" parameterType="string">
+  	select user_pwd from users where user_id=#{id}
+  </select>
+  
+  <delete id="myDel" parameterType="string">
+  	delete from users where user_id=#{id}
+  </delete>
+  
+  <select id="findAccount" resultType="com.mar.UVO.UserVO" parameterType="string">
+  	select * from users where user_email=#{email}
+  </select>
+  
+  <update id="pwUpdate" parameterType="string">
+  	update users
+  	set user_pwd=#{user_pwd}
+  	where user_id=#{user_id}
+  </update>
+
+  <select id="frlist" resultType="com.mar.UVO.UserVO" parameterType="string">
+		<![CDATA[
+		select user_id, user_image 
+		from users 
+		where user_id in (select distinct get_id from follow 
+							where send_id in 
+						(select get_id from follow where send_id=#{id}) and get_id <> #{id})
+			and user_id not in (select get_id from follow where send_id=#{id}) 
+			order by DBMS_RANDOM.RANDOM 
+		]]>
+	</select>
+
+ </mapper>

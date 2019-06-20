@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mar.UDAO">
+	<select resultType="string" parameterType="hashmap" id="checkid"> 
+		select user_id from users where user_id=#{id} and user_pwd=#{pwd} 
+	</select>
+	<insert parameterType="com.mar.UVO.UserVO" id="userJoin"> 
+		insert into users(user_id, user_pwd, user_name, USER_IMAGE, user_email, user_gen, user_intro) 
+		values(#{user_id}, #{user_pwd}, #{user_name}, #{USER_IMAGE} ,#{user_email}, #{user_gen}, #{user_intro}) 
+	</insert>
+	<select resultType="com.mar.UVO.UserVO" parameterType="string" id="dupliID"> 
+		select user_id from users where user_id=#{id}  
+	</select>
+</mapper>
